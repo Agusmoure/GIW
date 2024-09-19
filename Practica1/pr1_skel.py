@@ -3,8 +3,11 @@ TODO: rellenar
 
 Asignatura: GIW
 Práctica 1
-Grupo: XXXXXXX
-Autores: XXXXXX 
+Grupo: 08
+Autores: Carlos Rondon Arevalo
+         Pablo Padial Iniesta
+         David Llanes Martín
+         Agustín Moure Rodríguez
 
 Declaramos que esta solución es fruto exclusivamente de nuestro trabajo personal. No hemos
 sido ayudados por ninguna otra persona o sistema automático ni hemos obtenido la solución
