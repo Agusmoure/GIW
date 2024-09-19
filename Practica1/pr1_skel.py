@@ -77,10 +77,22 @@ def suma(matriz1, matriz2):
     return newMat
 
 # Ejercicio 2
+g = {"nodos": ["a", "b", "c", "d"],
+     "aristas": {"a": ["a", "b", "c"],
+                 "b": ["a", "c"],
+                 "c": ["c"],
+                 "d": ["c"]
+                 }
+     }
+
+
 def validar(grafo):
-    ...
+    claves = grafo.keys()
+    if (len(claves) != 2 or "nodos" not in grafo or "aristas" not in grafo):
+        return False
 
-
+    if (len(grafo["nodos"]) == 0):
+        return False
 def grado_entrada(grafo, nodo):
     ...
 
