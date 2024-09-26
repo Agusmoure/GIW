@@ -14,10 +14,14 @@ deshonesta ninguna otra actividad que pueda mejorar nuestros resultados ni perju
 resultados de los demás.
 """
 
-
+import csv
+from pprint import pprint
 ### Formato CSV
 def lee_fichero_accidentes(ruta):
-    ...
+    with open("AccidentesBicicletas_2021.csv", 'r', newline='', encoding='utf8') as fich:
+     ejemploLector = csv.reader(fich)
+    for linea in ejemploLector:
+        print(f"Linea #{ejemploLector.line_num} {linea}")
 
 def accidentes_por_distrito_tipo(datos):
     ...
