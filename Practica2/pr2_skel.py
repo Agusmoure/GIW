@@ -59,7 +59,7 @@ def codigos_postales(monumentos):
     return Counter(postal_code_monuments).most_common() 
 
 def busqueda_palabras_clave(monumentos, palabras):
-    lista=[]
+    conjunto = set()
     for monumento in monumentos:
         words=True
         for palabra in palabras:
@@ -67,9 +67,8 @@ def busqueda_palabras_clave(monumentos, palabras):
             if palabra.lower() not in desc_and_title.lower() :
                 words=False
         if(words):
-            lista.append((monumento["title"],monumento["address"]["district"]["@id"]))
-    return lista
-
+            conjunto.add((monumento["title"],monumento["address"]["district"]["@id"]))
+    return conjunto
 
 def busqueda_distancia(monumentos, direccion, distancia):
     geolocator = Nominatim(user_agent="GIW_pr2")
