@@ -26,12 +26,12 @@ def dimension(matriz):
 
     #Comprobamos matriz vacía
     if len(matriz)<=0:
-        return "None"
+        return None
     #Guardamos valor de columnas
     col=len(matriz[0])
     for fila in matriz:
         if len(fila)!=col :#Si hay columnas de distinto tamaño matriz mal formada
-            return "None"
+            return None
     #Si la matriz esta bien formada devolvemos la tupla correspondiente
     dim=(len(matriz),col)
     return dim
@@ -41,7 +41,7 @@ def es_cuadrada(matriz):
     Devuelve si una matriz es cuadrada o no
     Si la matriz no es valida devuelve None
     """
-    if dimension(matriz)=="None":#Si la matriz esta malformada o es vacía entonces no es cuadrada
+    if dimension(matriz)==None: #Si la matriz esta malformada o es vacía entonces no es cuadrada
         return False
     return len(matriz)==len(matriz[0])
 
@@ -67,8 +67,8 @@ def multiplica_escalar(matriz, k):
     de la matriz pasada por argumento son multiplicados por k
     """
     #Si la matriz esta mal formada o esta vacía entonces no se puede multiplicar
-    if dimension(matriz)=="None":
-        return "None"
+    if dimension(matriz)==None:
+        return None
     new_mat=[]
 
     for i,fila in enumerate(matriz):
@@ -83,8 +83,8 @@ def suma(matriz1, matriz2):
     a la suma de las dos dadas, si no es posible
     devuelve None
     """
-    if dimension(matriz1)=="None" or dimension(matriz1)!=dimension(matriz2):
-        return "None"
+    if dimension(matriz1)==None or dimension(matriz1)!=dimension(matriz2):
+        return None
     new_mat=[]
 
     for i,fila in enumerate(matriz1):
@@ -165,7 +165,7 @@ def distancia(grafo, nodo):
     visit.append(nodo)
     #Comprueba que el nodo esta dentro del grafo que esta bien formado
     if not validar(grafo) or nodo not in grafo["nodos"]:
-        return "None"
+        return None
     #Recorre el grafo comprobando la distancia entre los nodos
     while len(pending)>0:
         current=pending[0]
