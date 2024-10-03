@@ -77,7 +77,6 @@ def busqueda_distancia(monumentos, direccion, distancia):
     dir=geolocator.geocode(direccion,addressdetails=True)
     for monumento in monumentos:
         if "location" not in monumento:
-            #TODO Preguntar si los que no tienen location hay que sacar su direccion mediante calle y localizacion porque hay alguno que no tienen esas cosas tambien me parece
             continue
         lugar=(monumento["location"]["latitude"],monumento["location"]["longitude"])
         distancia_al_monumento=distance.distance((dir.latitude,dir.longitude), lugar).km
