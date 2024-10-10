@@ -56,6 +56,7 @@ class ManejadorNombres(xml.sax.ContentHandler):
         """
         if name=="name" :
             self.is_name=False
+            #añade el nombre desescapado del restaurante
             self.names.append(html.unescape(self.current_name).strip())
             self.current_name=""
 
@@ -98,6 +99,7 @@ class ManejadorSubcategorias(xml.sax.ContentHandler):
         """
         Se llama al comienzo de cada elemento del XML
         """
+        #Determina si debemos guardar el nombre o no
         if name=="categoria":
             self.is_categoria=True
         if name=="subcategoria":
@@ -116,6 +118,7 @@ class ManejadorSubcategorias(xml.sax.ContentHandler):
         Se llama para ver el contenido de cada elemento,
         No tiene porque llamarse una sola vez
         """
+        # si hay que guardarlo va añadiendo los carcateres leidos al valor actual
         if self.save_subcategory:
             self.current_subcategory+=content
         elif self.save_category:
@@ -125,6 +128,7 @@ class ManejadorSubcategorias(xml.sax.ContentHandler):
         """
         Se llama al final de cada elemento del XML
         """
+        #Resetea valores si es necesario
         if self.current_subcategory!="":
             aux=f"{self.current_category} > {self.current_subcategory}"
             self.subcategorias.add(aux)
@@ -158,9 +162,11 @@ def rellenar_campo(service, diccionario, campo, xml_name):
     Rellena un campo basico
     """
     data=None
+    #Si encuentra el valor pedido lo guarda
     if len(service.getElementsByTagName(xml_name)[0].childNodes)>0:
         node=service.getElementsByTagName(xml_name)[0].childNodes[0]
         data=html.unescape(node.data)
+    #asigna el valor, ya sea valido o sea None
     diccionario[campo]=data
 
 def rellenar_diccionario(service):
@@ -168,11 +174,13 @@ def rellenar_diccionario(service):
     Rellena el diccionario pedido para el ejercicio 3
     """
     dictionary={}
+    #rellena campos basicos
     rellenar_campo(service,dictionary,"name","name")
     rellenar_campo(service,dictionary,"descripcion","body")
     rellenar_campo(service,dictionary,"email","email")
     rellenar_campo(service,dictionary,"web","web")
     rellenar_campo(service,dictionary,"phone","phone")
+    #El campo horario al ser mas complicado lo hace de otra manera
     dictionary["horario"]=None
     extra_data=service.getElementsByTagName("extradata")[0]
     for item in extra_data.getElementsByTagName("item"):
@@ -187,6 +195,7 @@ def info_restaurante(filename, name):
     """
     arbol_dom=xml.dom.minidom.parse(filename)
     services=arbol_dom.documentElement.getElementsByTagName("service")
+    #recorre todos los restaurantes hasta que encuentra el que busca
     for service in services:
         aux=service.getElementsByTagName("name")[0]
         current_name=html.unescape(aux.childNodes[0].data).strip()
@@ -205,6 +214,7 @@ def busqueda_cercania(filename, lugar, n):
     geolocator = Nominatim(user_agent="GIW_pr2")
     origin=geolocator.geocode(lugar,addressdetails=True)
     lista=[]
+    # Busca aquellos servicios a menos distancia que el limite
     for service in services:
         lugar=(service.getElementsByTagName("latitude")[0].childNodes[0].data,
                 service.getElementsByTagName("longitude")[0].childNodes[0].data)
@@ -213,5 +223,6 @@ def busqueda_cercania(filename, lugar, n):
             nombre=html.unescape(service.getElementsByTagName("name")[0].childNodes[0].data)
             lista.append((distancia_al_restaurante,
                           nombre))
+    #Los ordena basandose en la distancia
     lista.sort(key=lambda restaurante:restaurante[0])
     return lista
