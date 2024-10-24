@@ -1,5 +1,4 @@
 """
-TODO: rellenar
 
 Asignatura: GIW
 Práctica 4
