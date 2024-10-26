@@ -1,6 +1,4 @@
 """
-TODO: rellenar
-
 Asignatura: GIW
 Práctica 6
 Grupo: XXXXXXX
@@ -14,11 +12,22 @@ deshonesta ninguna otra actividad que pueda mejorar nuestros resultados ni perju
 resultados de los demás.
 """
 
-
+import requests
 
 def inserta_usuarios(datos, token):
     """ Inserta todos los usuarios de la lista y devuelve True si todos han sido insertados correctamente """
-    ...
+    
+    usuarios_insertados = 0
+    
+    for usuario in datos:
+        response = requests.post("https://gorest.co.in/public/v2/users",
+                                headers={'Authorization': f'Bearer {token}'},
+                                data=usuario)
+    
+        if response.status_code == 201:
+            usuarios_insertados += 1
+
+    return usuarios_insertados
 
 
 def get_ident_email(email, token):
