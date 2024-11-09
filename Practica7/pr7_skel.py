@@ -22,16 +22,9 @@ app = Flask(__name__)
 ### <DEFINIR AQUI EL SERVICIO REST>
 ###
 # DUDA: Detecta pylint como constantes pero no son constantes
+# DUDA: if demasiados largos pero en if no permite multilinea
 asignaturas=[]
 id_actual=0
-@app.route('/asignaturas',methods=['DELETE'])
-def delete_all():
-    """
-    Elimina todas las asignaturas
-    """
-    asignaturas.clear()
-    return ('',204)
-
 def comprueba_horario(horario):
     """
     Devuelve si el horario es correcto
@@ -60,6 +53,24 @@ def comprueba_asignatura(asignatura):
         if not correcta:
             return False,mensaje
     return True, ""
+def get_asignatura_codigo(codigo):
+    found=False
+    asig_encontrada={}
+    for asignatura in asignaturas:
+        if asignatura["id"]==codigo:
+            found=True
+            asig_encontrada=asignatura
+            break
+    return found,asig_encontrada
+#Seccion de /asignaturas
+@app.route('/asignaturas',methods=['DELETE'])
+def delete_all():
+    """
+    Elimina todas las asignaturas
+    """
+    asignaturas.clear()
+    return ('',204)
+
 @app.route('/asignaturas', methods=['POST'])
 def post_asignatura():
     """
@@ -135,6 +146,54 @@ def get_global():
     if len(asignaturas)==len(restantes):
         return(response,200)
     return(response,206)
+
+#Seccion de /asignaturas/X
+@app.route('/asignaturas/<int:numero>',methods=["DELETE"])
+def delete_asignatura(numero):
+    found,asignatura=get_asignatura_codigo(numero)
+    if found:
+        asignaturas.remove(asignatura)
+        return("",204)
+    return("",404)
+
+@app.route('/asignaturas/<int:numero>',methods=["GET"])
+def get_asignatura(numero):
+    found, asignatura=get_asignatura_codigo(numero)
+    if found:
+        return(asignatura,200)
+    return("",404)
+
+@app.route('/asignaturas/<int:numero>',methods=["PUT"])
+def put_asignatura(numero):
+    found,asignatura=get_asignatura_codigo(numero)
+    if not found:
+        return("",404)
+    asignatura_nueva=request.get_json()
+    correcta,mensaje=comprueba_asignatura(asignatura_nueva)
+    if not correcta:
+        return(mensaje,400)
+    asignatura_nueva["id"]=asignatura["id"]
+    asignaturas.remove(asignatura)
+    asignaturas.append(asignatura_nueva)
+    return("",200)
+@app.route('/asignaturas/<int:numero>',methods=["PATCH"])
+def patch_asignatura(numero):
+    found,asignatura=get_asignatura_codigo(numero)
+    if not found:
+        return("",404)
+    validas=("nombre","horario","numero_alumnos")
+    print(len(request.get_json().keys()))
+    if len(request.get_json().keys())!=1:
+        return ("",400)
+    print("Pilla clave")
+    clave=list(request.get_json().keys())[0]
+    if clave not in validas:
+        return("",400)
+    asignatura[clave]=request.get_json()[clave]
+    return("",200)
+
+
+
 if __name__ == '__main__':
     # Activa depurador y recarga automáticamente
     app.config['ENV'] = 'development'
