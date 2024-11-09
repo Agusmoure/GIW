@@ -192,8 +192,13 @@ def patch_asignatura(numero):
     asignatura[clave]=request.get_json()[clave]
     return("",200)
 
-
-
+#seccion de /asignaturas/X/horario
+@app.route('/asignaturas/<int:numero>/horario',methods=["GET"])
+def get_horario(numero):
+    found,asignatura=get_asignatura_codigo(numero)
+    if not found:
+        return("",404)
+    return ({"horario":asignatura["horario"]},200)
 if __name__ == '__main__':
     # Activa depurador y recarga automáticamente
     app.config['ENV'] = 'development'

@@ -164,7 +164,6 @@ class TestREST(unittest.TestCase):
     def test_paginado(self):
         """Añadir varias asignaturas después de borrarlas y obtenerlas con paginación"""
         added = self.borra_e_inserta(ASIGS)
-        print(len(added))
         for page in range(1, 10):
             for per_page in range(1, 10):
                 r = requests.get(f'{HOST}/asignaturas?per_page={per_page}&page={page}',
@@ -196,7 +195,6 @@ class TestREST(unittest.TestCase):
         """Las peticiones POST con asignaturas mal formadas devuelven 400"""
         self.borra_e_inserta(ASIGS)
         for asig in BAD_ASIGS:
-            print(asig)
             r = requests.post(f'{HOST}/asignaturas', json=asig, timeout=TIMEOUT)
             self.assertEqual(r.status_code, 400)
 
