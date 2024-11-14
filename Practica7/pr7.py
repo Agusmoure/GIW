@@ -1,10 +1,11 @@
 """
-TODO: rellenar
-
 Asignatura: GIW
-Práctica X
-Grupo: XXXXXXX
-Autores: XXXXXX 
+Práctica 7
+Grupo: 08
+Autores: Carlos Rondon Arevalo
+         Pablo Padial Iniesta
+         David Llanes Martín
+         Agustín Moure Rodríguez  
 
 Declaramos que esta solución es fruto exclusivamente de nuestro trabajo personal. No hemos
 sido ayudados por ninguna otra persona o sistema automático ni hemos obtenido la solución
@@ -17,13 +18,8 @@ resultados de los demás.
 from flask import Flask, request
 app = Flask(__name__)
 
-
-###
-### <DEFINIR AQUI EL SERVICIO REST>
-###
-# DUDA: Detecta pylint como constantes pero no son constantes
-# DUDA: if demasiados largos pero en if no permite multilinea
 asignaturas=[]
+# Detecta pylint como constante pero no es constante
 id_actual=0
 def comprueba_horario(horario):
     """
@@ -34,10 +30,16 @@ def comprueba_horario(horario):
     if len(horario)!=3:
         return False,"Algun horario no tiene suficientes claves o tiene mas de estas"
     #las claves son las necesarias
-    if "dia" not in horario or "hora_inicio" not in horario or "hora_final" not in horario:
+    if "dia" not in horario \
+        or "hora_inicio" not in horario\
+        or "hora_final" not in horario:
         return False, "Alguna de las claves del horario esta mal"
     #el valor de las claves son correctas
-    if not isinstance(horario["dia"],str) or isinstance(horario["hora_inicio"],bool) or not isinstance(horario["hora_inicio"],int) or isinstance(horario["hora_final"],bool) or not isinstance(horario["hora_final"],int):
+    if not isinstance(horario["dia"],str)\
+        or isinstance(horario["hora_inicio"],bool)\
+        or not isinstance(horario["hora_inicio"],int)\
+        or isinstance(horario["hora_final"],bool)\
+        or not isinstance(horario["hora_final"],int):
         return False,"Algun tipo del horario es incorrecto"
     return True, ""
 def comprueba_asignatura(asignatura):
@@ -49,10 +51,15 @@ def comprueba_asignatura(asignatura):
     if len(asignatura)!=3:
         return False,"numero de claves incorrecto"
     #Las claves son exactamente las necesarias
-    if "nombre" not in asignatura or "numero_alumnos" not in asignatura or "horario" not in asignatura:
+    if "nombre" not in asignatura\
+        or "numero_alumnos" not in asignatura\
+        or "horario" not in asignatura:
         return False,"alguna clave es erronea"
     #los valores de las claves son correctos
-    if not isinstance(asignatura["nombre"],str) or isinstance(asignatura["numero_alumnos"],bool) or not isinstance(asignatura["numero_alumnos"],int) or not isinstance(asignatura["horario"],list):
+    if not isinstance(asignatura["nombre"],str)\
+        or isinstance(asignatura["numero_alumnos"],bool)\
+        or not isinstance(asignatura["numero_alumnos"],int)\
+        or not isinstance(asignatura["horario"],list):
         return False,"tipos incorrectos"
     for fecha in asignatura["horario"]:
         correcta,mensaje=comprueba_horario(fecha)
@@ -106,7 +113,7 @@ def post_asignatura():
     global id_actual
     asignatura["id"]= id_actual
     asignaturas.append(asignatura)
-    id_actual+=1
+    id_actual=id_actual+1
     return ({"id":asignatura["id"]},201)
 
 @app.route('/asignaturas',methods=["GET"])
@@ -227,4 +234,4 @@ if __name__ == '__main__':
     app.config['DEBUG'] = True
     app.config['TEST'] = True
 
-    app.run()
+    app.run(port=5000)
