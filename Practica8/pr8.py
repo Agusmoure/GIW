@@ -19,8 +19,9 @@ resultados de los demás.
 ### <DEFINIR AQUÍ LAS CLASES DE MONGOENGINE>
 ###
 
-from mongoengine import  Document, EmbeddedDocument, EmbeddedDocumentField, StringField, \
+from mongoengine import Document, EmbeddedDocument, EmbeddedDocumentField, StringField, \
   IntField, ListField, ValidationError,FloatField,ComplexDateTimeField,ReferenceField
+from datetime import datetime
 
 class Tarjeta(EmbeddedDocument):
     """
@@ -28,14 +29,11 @@ class Tarjeta(EmbeddedDocument):
     """
     nombre=StringField(required=True,min_length=2)
     numero=StringField(required=True,min_length=16,max_length=16,regex="[0-9]{16}")
-    mes=StringField(required=True,min_length=2,max_length=2,regex="[0,1]{1}[0-9]")
+    mes=StringField(required=True,min_length=2,max_length=2,regex="^(0[1-9]|1[0-2])$")
     year=StringField(required=True,min_length=2,max_length=2,regex="[0-9]{2}")
     cvv=StringField(required=True,min_length=3,max_length=3,regex="[0-9]{3}")
     def clean(self):
         self.validate(clean=False)
-        mes_number=int(self.mes)
-        if mes_number<1 or mes_number>12:
-            raise ValidationError("El valor del mes no es válido")
 
 class Producto(Document):
     """
@@ -116,22 +114,16 @@ class Usuario(Document):
     apellido1=StringField(required=True,min_length=2)
     apellido2=StringField(required=False)
     f_nac=StringField(required=True,min_length=10,max_length=10,
-                      regex="[0-9]{4}[-]{1}[0-9]{2}[-]{1}[0-9]{2}")
+                      regex="[0-9]{4}-[0-9]{2}-[0-9]{2}")
     tarjetas=ListField(EmbeddedDocumentField(Tarjeta),required=False)
     pedidos=ListField(ReferenceField(Pedido,reverse_delete_rule=4),required=False)
     def clean(self):
         self.validate(clean=False)
-        letras_validacion={
-            0:'T', 8:'P', 16:'Q',
-            1:'R', 9:'D', 17:'V',
-            2:'W', 10:'X', 18:'H',
-            3:'A', 11:'B', 19:'L',
-            4:'G', 12:'N', 20:'C',
-            5:'M', 13:'J', 21:'K',
-            6:'Y', 14:'Z', 22:'E',
-            7:'F', 15:'S',
-        }
+        letras_validacion="TRWAGMYFPDXBNJZSQVHLCKE"
         letra_a_validar=self.dni[-1]
         numero_dni=int(self.dni[:-1])
-        if letras_validacion.get(numero_dni%23,"")!=letra_a_validar:
+        letra_correcta = letras_validacion[numero_dni % 23]
+        if letra_correcta != letra_a_validar:
             raise ValidationError("El DNI no es válido")
+        if not datetime.strptime(self.f_nac, "%Y-%m-%d"):
+            raise ValidationError("La fecha de nacimiento no es válida")
