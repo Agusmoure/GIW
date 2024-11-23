@@ -19,9 +19,9 @@ resultados de los demás.
 ### <DEFINIR AQUÍ LAS CLASES DE MONGOENGINE>
 ###
 
+from datetime import datetime
 from mongoengine import Document, EmbeddedDocument, EmbeddedDocumentField, StringField, \
   IntField, ListField, ValidationError,FloatField,ComplexDateTimeField,ReferenceField
-from datetime import datetime
 
 class Tarjeta(EmbeddedDocument):
     """
