@@ -14,14 +14,14 @@ deshonesta ninguna otra actividad que pueda mejorar nuestros resultados ni perju
 resultados de los demás.
 """
 
-
 from flask import Flask, request, session, render_template
 from mongoengine import connect, Document, StringField, EmailField
+import bcrypt
 # Resto de importaciones
 
 
 app = Flask(__name__)
-connect('giw_auth')
+records=connect('giw_auth')
 
 
 # Clase para almacenar usuarios usando mongoengine
@@ -43,33 +43,44 @@ class User(Document):
 # Explicación detallada del mecanismo escogido para el almacenamiento de
 # contraseñas, explicando razonadamente por qué es seguro
 #
-
-
+from pprint import pprint
+def from_form_get_dict(form):
+    print("Entra")
+    splited=form.split('&')
+    pprint(splited)
+    dicta={}
+    for pareja in splited:
+        pareja=pareja.split('=')
+        dicta[pareja[0]]=pareja[1]
+    return dicta
 @app.route('/signup', methods=['POST'])
 def signup():
-    nick = request.args.get("nickname");
-    full_name = request.args.get("full_name");
-    password = request.args.get("password");
-    passwordrpt = request.args.get("password2");
-    email = request.args.get("email");
-
+    dictado=from_form_get_dict(request.get_data(as_text=True))
+    nick = dictado.get("nickname")
+    full_name = dictado.get("full_name")
+    password = dictado.get("password")
+    passwordrpt = dictado.get("password2")
+    email = dictado.get("email")
+    country=dictado.get("country")
+    ##user.findone(nick) o algo asi
+    #user.save ajustar user en funcion de lo de la practica 8
     nick_exist = records.find_one({"nickname": nick})
     if (nick_exist):
-    	msg = 'El usuario ya existe';
-    	render_template('signup', message=msg);
+        msg = 'El usuario ya existe'
+        render_template('signup', message=msg)
 
-    if password != password2:
-    	msg = 'Las contraseñas no coinciden';
-    	render_template('signup', message=msg);
+    if password != passwordrpt:
+        msg = 'Las contraseñas no coinciden'
+        render_template('signup', message=msg)
     else:
-		hashed = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt())
-		user = {'user_id': nick, 'full_name': full_name, 
-		'country': country, 'email': email, 'passwd': hashed }
-		records.insert_one(user)
+        hashed = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt())
+        user = {'user_id': nick, 'full_name': full_name, 
+        'country': country, 'email': email, 'passwd': hashed }
+        records.insert_one(user)
 
-		return render_template('welcome.html', name=full_name);
+        return render_template('welcome.html', name=full_name)
 
-	return render_template('login.html')
+    return render_template('login.html')
 
 
 
@@ -79,42 +90,42 @@ def change_password():
     nick = request.form.get("nickname")
     password = request.form.get("old_password")
     newPassword = request.form.get("new_password")
-       
+    
     nick_found = records.find_one({"nickname": nick})
-        if nick_found:
-            nick_val = nick_found['nickname']
-            passwordcheck = nick_found['password']
-      
-            if bcrypt.checkpw(password.encode('utf-8'), passwordcheck):
-                hashed = bcrypt.hashpw(newPassword.encode('utf-8'), bcrypt.gensalt())
-				records.update_one({nickname: nick}, {passwd: hashed});
+    if nick_found:
+        nick_val = nick_found['nickname']
+        passwordcheck = nick_found['password']
+
+        if bcrypt.checkpw(password.encode('utf-8'), passwordcheck):
+            hashed = bcrypt.hashpw(newPassword.encode('utf-8'), bcrypt.gensalt())
+            records.update_one({nickname: nick}, {passwd: hashed})
 
 
-                return render_template('passchanged.html', name=nick)
-        else:
-            message = 'Usuario o contraseña incorrectos'
-            return render_template('change_pass.html', message=message)
- 	return render_template('change_pass.html')
-           
+            return render_template('passchanged.html', name=nick)
+    else:
+        message = 'Usuario o contraseña incorrectos'
+        return render_template('change_pass.html', message=message)
+    return render_template('change_pass.html')
+        
 @app.route('/login', methods=['POST'])
 def login():
     nick = request.form.get("nickname")
     password = request.form.get("password")
 
-       
+    
     nick_found = records.find_one({"nickname": nick})
-        if nick_found:
-            email_val = nick_found['email']
-            passwordcheck = nick_found['password']
-            
-            if bcrypt.checkpw(password.encode('utf-8'), passwordcheck):
-                return render_template('welcome.html', name=nick_found['full_name']);
-            else:
-                message = 'Contraseña incorrecta'
-                return render_template('login.html', message=message)
+    if nick_found:
+        email_val = nick_found['email']
+        passwordcheck = nick_found['password']
+        
+        if bcrypt.checkpw(password.encode('utf-8'), passwordcheck):
+            return render_template('welcome.html', name=nick_found['full_name'])
         else:
-            message = 'Usuario incorrecto'
+            message = 'Contraseña incorrecta'
             return render_template('login.html', message=message)
+    else:
+        message = 'Usuario incorrecto'
+        return render_template('login.html', message=message)
     return render_template('login.html')
     
 
@@ -136,7 +147,7 @@ def signup_totp():
 @app.route('/login_totp', methods=['POST'])
 def login_totp():
     ...
-  
+
 
 if __name__ == '__main__':
     # Activa depurador y recarga automáticamente
