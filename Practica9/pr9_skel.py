@@ -17,6 +17,7 @@ resultados de los demás.
 from flask import Flask, request, session, render_template
 from mongoengine import connect, Document, StringField, EmailField
 import bcrypt
+from urllib.parse import unquote
 # Resto de importaciones
 
 
@@ -45,40 +46,45 @@ class User(Document):
 #
 from pprint import pprint
 def from_form_get_dict(form):
-    print("Entra")
+
     splited=form.split('&')
-    pprint(splited)
-    dicta={}
+    dicc={}
     for pareja in splited:
         pareja=pareja.split('=')
-        dicta[pareja[0]]=pareja[1]
-    return dicta
+        dicc[pareja[0]]=pareja[1]
+    return dicc
 @app.route('/signup', methods=['POST'])
 def signup():
-    dictado=from_form_get_dict(request.get_data(as_text=True))
-    nick = dictado.get("nickname")
-    full_name = dictado.get("full_name")
-    password = dictado.get("password")
-    passwordrpt = dictado.get("password2")
-    email = dictado.get("email")
-    country=dictado.get("country")
+    dicc=from_form_get_dict(request.get_data(as_text=True))
+    nick = dicc.get("nickname")
+    full_name = dicc.get("full_name")
+    password = dicc.get("password")
+    passwordrpt = dicc.get("password2")
+    email = unquote(dicc.get("email"))
+    country=dicc.get("country")
+    print(email)
     ##user.findone(nick) o algo asi
     #user.save ajustar user en funcion de lo de la practica 8
-    nick_exist = records.find_one({"nickname": nick})
-    if (nick_exist):
-        msg = 'El usuario ya existe'
-        render_template('signup', message=msg)
+    aux=User.objects()
+    for user in aux:
+        if user.user_id is nick:
+            msg = 'El usuario ya existe'
+            print(msg)
+            render_template('signup', message=msg)
+            return (msg,409)
 
     if password != passwordrpt:
         msg = 'Las contraseñas no coinciden'
+        print(msg)
         render_template('signup', message=msg)
+        return(msg,400)
     else:
         hashed = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt())
-        user = {'user_id': nick, 'full_name': full_name, 
-        'country': country, 'email': email, 'passwd': hashed }
-        records.insert_one(user)
-
-        return render_template('welcome.html', name=full_name)
+        user =User( user_id=nick,full_name=full_name, country= country,email=  email, passwd=hashed )
+        user.save()
+        render_template('welcome.html', name=full_name)
+        print("user created")
+        return("Usuario creado",201)
 
     return render_template('login.html')
 
