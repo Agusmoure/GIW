@@ -53,8 +53,8 @@ def from_form_get_dict(form):
         pareja=pareja.split('=')
         dicc[pareja[0]]=pareja[1]
     return dicc
-@app.route('/signup', methods=['POST'])
-def signup():
+
+def signup_validation(request):
 #TODO en lugar de hacer un dict podriamos hacer una segunda funcion directamente un user eso hace las cosas mas eficientes
     dicc=from_form_get_dict(request.get_data(as_text=True))
     nick = dicc.get("nickname")
@@ -69,23 +69,26 @@ def signup():
         msg = 'El usuario ya existe'
         print(msg)
         #TODO es necesario hacer templates o se puede hacer asi?
-        return (msg,409)
+        return False,msg,409
 
     if password != passwordrpt:
         msg = 'Las contraseñas no coinciden'
         print(msg)
-        return(msg,400)
+        return False,msg,400
     else:
         hashed = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt())
         user =User( user_id=nick,full_name=full_name, country= country,email=  email, passwd=hashed )
         user.save()
         #TODO hecho con templates por si lo necesitamos hacer asi
-        return render_template('Welcome.html.jinja', name=full_name)
+        return True,f"Bienvenido usuario {full_name}",201 
+        # render_template('Welcome.html.jinja', name=full_name)
         # print("user created")
         # return("Usuario creado",201)
 
-
-
+@app.route('/signup', methods=['POST'])
+def signup():
+    could_create,msg,code=signup_validation(request)
+    return (msg,code)
 
 @app.route('/change_password', methods=['POST'])
 def change_password():
@@ -109,9 +112,8 @@ def change_password():
     hashed = bcrypt.hashpw(newPassword.encode('utf-8'), bcrypt.gensalt())
     User.objects(user_id=nick).update(set__passwd=hashed)
     return (f"La contraseña de {nick} ha sido modificada",201)
-        
-@app.route('/login', methods=['POST'])
-def login():
+
+def login_validation(request):
     dicc=from_form_get_dict(request.get_data(as_text=True))
     nick = dicc.get("nickname")
     password = dicc.get("password")
@@ -120,9 +122,13 @@ def login():
         user=users[0]
         passwordcheck = user.passwd.encode('utf-8')
         if bcrypt.checkpw(password.encode('utf-8'), passwordcheck):
-            return (f'Bienvenido {user.full_name}',200)
-    return ("Usuario o contraseña incorrectos",400)
+            return True,f'Bienvenido {user.full_name}',200
+    return False, "Usuario o contraseña incorrectos",400
 
+@app.route('/login', methods=['POST'])
+def login():
+    login_correct,msg,code=login_validation(request)
+    return (msg,code)
 ##############
 # APARTADO 2 #
 ##############
@@ -135,13 +141,17 @@ def login():
 
 @app.route('/signup_totp', methods=['POST'])
 def signup_totp():
-    ...
-        
+    could_create,msg,code=signup_validation(request)
+    if not could_create:
+        return (msg,code)
+    #TODO comprobar el topt
 
 @app.route('/login_totp', methods=['POST'])
 def login_totp():
-    ...
-
+    login_correct,msg,code=login_validation(request)
+    if not login_correct:
+        return (msg,code)
+    #TODO añadir topt
 
 if __name__ == '__main__':
     # Activa depurador y recarga automáticamente
