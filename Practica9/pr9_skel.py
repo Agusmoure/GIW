@@ -55,6 +55,7 @@ def from_form_get_dict(form):
     return dicc
 @app.route('/signup', methods=['POST'])
 def signup():
+#TODO en lugar de hacer un dict podriamos hacer una segunda funcion directamente un user eso hace las cosas mas eficientes
     dicc=from_form_get_dict(request.get_data(as_text=True))
     nick = dicc.get("nickname")
     full_name = dicc.get("full_name")
@@ -63,77 +64,64 @@ def signup():
     email = unquote(dicc.get("email"))
     country=dicc.get("country")
     print(email)
-    ##user.findone(nick) o algo asi
-    #user.save ajustar user en funcion de lo de la practica 8
-    aux=User.objects()
-    for user in aux:
-        if user.user_id is nick:
-            msg = 'El usuario ya existe'
-            print(msg)
-            render_template('signup', message=msg)
-            return (msg,409)
+    aux=User.objects(user_id=nick)
+    if len(aux)>0 :
+        msg = 'El usuario ya existe'
+        print(msg)
+        #TODO es necesario hacer templates o se puede hacer asi?
+        return (msg,409)
 
     if password != passwordrpt:
         msg = 'Las contraseñas no coinciden'
         print(msg)
-        render_template('signup', message=msg)
         return(msg,400)
     else:
         hashed = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt())
         user =User( user_id=nick,full_name=full_name, country= country,email=  email, passwd=hashed )
         user.save()
-        render_template('welcome.html', name=full_name)
-        print("user created")
-        return("Usuario creado",201)
-
-    return render_template('login.html')
+        #TODO hecho con templates por si lo necesitamos hacer asi
+        return render_template('Welcome.html.jinja', name=full_name)
+        # print("user created")
+        # return("Usuario creado",201)
 
 
 
 
 @app.route('/change_password', methods=['POST'])
 def change_password():
-    nick = request.form.get("nickname")
-    password = request.form.get("old_password")
-    newPassword = request.form.get("new_password")
+    dicc=from_form_get_dict(request.get_data(as_text=True))
+    nick = dicc.get("nickname")
+    password = dicc.get("old_password")
+    newPassword = dicc.get("new_password")
     
-    nick_found = records.find_one({"nickname": nick})
-    if nick_found:
-        nick_val = nick_found['nickname']
-        passwordcheck = nick_found['password']
-
-        if bcrypt.checkpw(password.encode('utf-8'), passwordcheck):
-            hashed = bcrypt.hashpw(newPassword.encode('utf-8'), bcrypt.gensalt())
-            records.update_one({nickname: nick}, {passwd: hashed})
-
-
-            return render_template('passchanged.html', name=nick)
-    else:
-        message = 'Usuario o contraseña incorrectos'
-        return render_template('change_pass.html', message=message)
-    return render_template('change_pass.html')
+    nick_found = User.objects(user_id= nick)
+    print(nick_found)
+    if len(nick_found)<=0:
+        return("Usuario o contraseña incorrectos",409)
+    #TODO preguntar si debemos ignorar este caso
+    if password is newPassword:
+        return ("La nueva contraseña no puede ser la antigua contraseña",400)
+    user=nick_found[0]
+    if not bcrypt.checkpw(password.encode('utf-8'),user.passwd.encode('utf-8')):
+        return("Usuario o contraseña incorrectos",409)
+    #TODO por alguna razón este codigo da error cuando arriba funciona bien
+    #Dice que passwd solo acepta strings 
+    hashed = bcrypt.hashpw(newPassword.encode('utf-8'), bcrypt.gensalt())
+    User.objects(user_id=nick).update(set__passwd=hashed)
+    return (f"La contraseña de {nick} ha sido modificada",201)
         
 @app.route('/login', methods=['POST'])
 def login():
-    nick = request.form.get("nickname")
-    password = request.form.get("password")
-
-    
-    nick_found = records.find_one({"nickname": nick})
-    if nick_found:
-        email_val = nick_found['email']
-        passwordcheck = nick_found['password']
-        
+    dicc=from_form_get_dict(request.get_data(as_text=True))
+    nick = dicc.get("nickname")
+    password = dicc.get("password")
+    users = User.objects(user_id= nick)
+    if len(users)>0:
+        user=users[0]
+        passwordcheck = user.passwd.encode('utf-8')
         if bcrypt.checkpw(password.encode('utf-8'), passwordcheck):
-            return render_template('welcome.html', name=nick_found['full_name'])
-        else:
-            message = 'Contraseña incorrecta'
-            return render_template('login.html', message=message)
-    else:
-        message = 'Usuario incorrecto'
-        return render_template('login.html', message=message)
-    return render_template('login.html')
-    
+            return (f'Bienvenido {user.full_name}',200)
+    return ("Usuario o contraseña incorrectos",400)
 
 ##############
 # APARTADO 2 #
@@ -166,5 +154,4 @@ if __name__ == '__main__':
 
     app.config['STATIC_FOLDER'] = 'static'
     app.config['TEMPLATES_FOLDER'] = 'templates'
-
     app.run()
