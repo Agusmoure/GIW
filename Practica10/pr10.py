@@ -16,12 +16,12 @@ deshonesta ninguna otra actividad que pueda mejorar nuestros resultados ni perju
 resultados de los demás.
 """
 
-from flask import Flask, request, session
-# Resto de importaciones
-import requests
 import base64
 import json
 import secrets
+
+from flask import Flask, request, session
+import requests
 
 app = Flask(__name__)
 
@@ -31,18 +31,19 @@ CLIENT_SECRET = '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'
 
 REDIRECT_URI = 'http://localhost:5000/token'
 
-# Fichero de descubrimiento para obtener el 'authorization endpoint' y el 
+# Fichero de descubrimiento para obtener el 'authorization endpoint' y el
 # 'token endpoint'
 DISCOVERY_DOC = 'https://accounts.google.com/.well-known/openid-configuration'
 
 def get_google_endpoints():
-    response = requests.get(DISCOVERY_DOC)
+    """Obtiene los endpoints de autorización y token de Google."""
+    response = requests.get(DISCOVERY_DOC, timeout=10)
     discovery_data = response.json()
     return discovery_data["authorization_endpoint"], discovery_data["token_endpoint"]
 
 @app.route('/login_google', methods=['GET'])
 def login_google():
-
+    """Inicia sesión con Google"""
     state = secrets.token_urlsafe(16)
     session['state'] = state
 
@@ -72,6 +73,7 @@ def login_google():
 
 @app.route('/token', methods=['GET'])
 def token():
+    """Procesa el token de Google después del inicio de sesión"""
     code = request.args.get("code")
     state = request.args.get("state")
 
@@ -87,7 +89,7 @@ def token():
         "grant_type": "authorization_code",
     }
 
-    token_response = requests.post(token_endpoint, data=token_data)
+    token_response = requests.post(token_endpoint, data=token_data, timeout=10)
     token_json = token_response.json()
     id_token = token_json.get("id_token")
 
