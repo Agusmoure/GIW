@@ -16,17 +16,6 @@ de manera directa o indirecta. Declaramos además que no hemos realizado de mane
 deshonesta ninguna otra actividad que pueda mejorar nuestros resultados ni perjudicar los
 resultados de los demás.
 """
-"""
-Bcrypt se ha convertido en el estándar de facto para el hashing de contraseñas en muchos sistemas 
-debido a su adopción generalizada y seguridad probada. Es compatible con la mayoría de los lenguajes 
-de programación y plataformas, lo que lo convierte en una opción confiable para la encriptación en 
-diferentes entornos.
-Además de incorporar una sal para proteger contra ataques, bcrypt es una función adaptativa: con el 
-tiempo, el recuento de iteraciones se puede aumentar para hacerlo más lento, por lo que sigue siendo 
-resistente a ataques de búsqueda de fuerza bruta incluso con un aumento en el poder de cálculo.
-Por lo general, el hash de contraseñas debe completarse en menos de 1000 ms. En este escenario, 
-bcrypt es más seguro que pbkdf2, scrypt y argon2.
-"""
 
 from urllib.parse import unquote
 import base64
@@ -54,6 +43,24 @@ class User(Document):
     email = EmailField(required=True)
     passwd = StringField(required=True)
     totp_secret = StringField(required=False)
+
+##############
+# APARTADO 1 #
+##############
+
+# Explicación detallada del mecanismo escogido para el almacenamiento de
+# contraseñas, explicando razonadamente por qué es seguro
+
+# Bcrypt se ha convertido en el estándar de facto para el hashing de contraseñas en muchos sistemas
+# debido a su adopción generalizada y seguridad probada. Es compatible con la mayoría de lenguajes
+# de programación y plataformas, lo que lo convierte en una opción confiable para la encriptación en
+# diferentes entornos.
+# Además de incorporar una sal para proteger contra ataques, bcrypt es una función adaptativa:
+# con el tiempo, el recuento de iteraciones se puede aumentar para hacerlo más lento,
+# por lo que sigue siendo resistente a ataques de búsqueda de fuerza bruta
+# incluso con un aumento en el poder de cálculo.
+# Por lo general, el hash de contraseñas debe completarse en menos de 1000 ms. En este escenario,
+# bcrypt es más seguro que pbkdf2, scrypt y argon2.
 
 def from_form_get_dict(form):
     """
@@ -120,7 +127,6 @@ def change_password():
     if len(nick_found)<=0:
         return render_template("Fail.html.jinja",msg="Usuario o contraseña incorrectos"),400
     if password is new_password:
-        # TODO: DUDA ignorar este caso?
         return render_template("Fail.html.jinja",
                                 msg="La nueva contraseña no puede ser la antigua contraseña"),400
     user=nick_found[0]
