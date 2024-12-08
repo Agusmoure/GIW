@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Iniciar sesión</title>
+</head>
+<body>
+<h1>La web para preguntas y respuestas</h1>
+<p>
+    {% if request.user.is_authenticated %}
+        Bienvenido {{ request.user.username }}
+    {% else %}
+        No autenticado <a href="{% url 'preguntas:login' %}"><button type="button">Iniciar sesión</button></a>
+    {% endif %}
+</p>
+
+{% if error_message %}
+<h2>{{ error_message }}</h2>
+{% else %}
+<form method="post">
+    {% csrf_token %}
+    <p><strong>{{ login_form.username.label }}</strong>: {{ login_form.username }}</p>
+    <p><strong>{{ login_form.password.label }}</strong>: {{ login_form.password }}</p>
+    <button type="submit">Iniciar sesión</button>
+</form>
+{% endif %}
+</body>
+</html>

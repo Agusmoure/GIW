@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+
+{% block title %}
+Preguntas
+{% endblock %}
+
+{% block content %}
+<h2>Preguntas</h2>
+<ul>
+{% for pregunta in preguntas %}
+    <li>
+        <a href="{% url 'preguntas:detalle_pregunta' pregunta.ident %}">
+            <strong>{{ pregunta.titulo }}</strong>
+        </a>
+        -- {{ pregunta.autor.username }} ({{ pregunta.fecha_creacion }})<br>
+        {{ pregunta.num_respuestas }} respuestas
+    </li>
+{% endfor %}
+</ul>
+
+{% if user.is_authenticated %}
+<h3>Añadir nueva pregunta</h3>
+<form method="post" action="{% url 'preguntas:agregar_pregunta' %}">
+    <table>
+        {{ form }}
+    </table>
+    {% csrf_token %}
+    <button type="submit">Enviar pregunta</button>
+</form>
+{% endif %}
+{% endblock %}
